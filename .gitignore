@@ -1,0 +1,21 @@
+# Python
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/.env*
+backend/data/sessions/*
+backend/data/chromadb/*
+!backend/data/sessions/.gitkeep
+!backend/data/chromadb/.gitkeep
+
+# Evaluation outputs (generated, not source)
+backend/evaluation/results/*
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# OS
+.DS_Store
+Thumbs.db
+*.pyc
