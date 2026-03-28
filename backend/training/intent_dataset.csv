@@ -1,0 +1,61 @@
+query,intent
+What is backpropagation?,answer
+Define gradient descent,answer
+What does the softmax function do?,answer
+How does dropout prevent overfitting?,answer
+What is a convolutional layer?,answer
+Explain the vanishing gradient problem,answer
+What is the purpose of the bias term?,answer
+How does batch normalization work?,answer
+What is the learning rate?,answer
+What is an epoch in neural network training?,answer
+Define precision and recall,answer
+What is cross-entropy loss?,answer
+How does ReLU differ from sigmoid?,answer
+What is a confusion matrix?,answer
+Explain the role of the optimizer,answer
+What is transfer learning?,answer
+Define hyperparameter tuning,answer
+What is regularization?,answer
+How is F1 score calculated?,answer
+What is a recurrent neural network?,answer
+Summarize the chapter on neural networks,summarise
+Give me an overview of this document,summarise
+What are the main topics covered in these notes?,summarise
+Summarize what was discussed about optimization,summarise
+Give a brief summary of the retrieval section,summarise
+What are the key points about classification?,summarise
+Summarize the introduction,summarise
+Give me a high-level overview of deep learning as covered here,summarise
+What does this document say about evaluation metrics overall?,summarise
+Summarize the section on model selection,summarise
+Provide an overview of the concepts in these notes,summarise
+What topics are discussed about training?,summarise
+Summarize everything about loss functions,summarise
+Give me the gist of what is covered about CNNs,summarise
+What are the major themes in this material?,summarise
+Summarize the key ideas about regularization,summarise
+Give a brief rundown of unsupervised learning as covered,summarise
+Summarize the notes on attention mechanisms,summarise
+What does the document cover regarding data preprocessing?,summarise
+Give an overview of what is discussed about transformers,summarise
+What is the capital of France?,out-of-scope
+Who won the cricket World Cup?,out-of-scope
+Tell me a joke,out-of-scope
+What is the current stock price of Apple?,out-of-scope
+Write me a poem,out-of-scope
+What is 2 plus 2?,out-of-scope
+How do I cook pasta?,out-of-scope
+What movies are playing this weekend?,out-of-scope
+Who is the president of the United States?,out-of-scope
+What is the weather today?,out-of-scope
+Translate this to French,out-of-scope
+What is the meaning of life?,out-of-scope
+Write code to sort a list in Python,out-of-scope
+What year was the Eiffel Tower built?,out-of-scope
+Can you book a flight for me?,out-of-scope
+What is Bitcoin?,out-of-scope
+Tell me about the history of ancient Rome,out-of-scope
+What are today's news headlines?,out-of-scope
+How do I make a website?,out-of-scope
+What is my GPA?,out-of-scope

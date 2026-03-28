@@ -1,0 +1,34 @@
+# ─── Web Framework ───────────────────────────────────────────────
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+python-multipart==0.0.9        # required for file upload (multipart/form-data)
+
+# ─── Validation & Settings ───────────────────────────────────────
+pydantic==2.7.0
+pydantic-settings==2.2.1       # reads .env into Settings class
+python-dotenv==1.0.1
+
+# ─── PDF Parsing ─────────────────────────────────────────────────
+pdfplumber==0.11.0
+
+# ─── Machine Learning (Classifier + TF-IDF) ──────────────────────
+scikit-learn==1.4.2
+scipy==1.13.0                  # sparse matrix format used by TfidfVectorizer
+numpy==1.26.4
+pandas==2.2.2                  # loading intent_dataset.csv
+
+# ─── Semantic Retrieval (Path B) ─────────────────────────────────
+sentence-transformers==2.7.0   # all-MiniLM-L6-v2 model
+chromadb==0.5.0                # local vector database
+
+# ─── LLM Integration ─────────────────────────────────────────────
+google-generativeai==0.5.4     # official Gemini Python SDK
+
+# ─── Evaluation & Visualisation ──────────────────────────────────
+matplotlib==3.9.0              # confusion matrix plot
+seaborn==0.13.2                # prettier confusion matrix heatmap
+
+# ─── Testing ─────────────────────────────────────────────────────
+pytest==8.2.0
+httpx==0.27.0                  # required by FastAPI TestClient
+pytest-asyncio==0.23.7

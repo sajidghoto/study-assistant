@@ -1,0 +1,111 @@
+# backend/config.py
+#
+# Single source of truth for all configuration values.
+# Every other module imports `settings` from here.
+# Values are read from the .env file automatically.
+# If a required value is missing, the app crashes at startup
+# with a clear error — not silently at runtime.
+
+from pathlib import Path
+from pydantic_settings import BaseSettings
+from pydantic import Field
+
+
+# Absolute path to the backend/ directory.
+# __file__ is config.py itself, .parent gives backend/
+BASE_DIR = Path(__file__).parent
+
+
+class Settings(BaseSettings):
+    """
+    All application settings. Each field maps to an .env variable.
+    Pydantic-settings automatically reads the .env file and casts
+    values to the correct Python type.
+    """
+
+    # ── LLM ──────────────────────────────────────────────────────
+    gemini_api_key: str = Field(
+        ...,                          # ... means required — no default
+        description="Google Gemini API key"
+    )
+
+    # ── Retrieval ─────────────────────────────────────────────────
+    retrieval_mode: str = Field(
+        default="tfidf",
+        description="'tfidf' for Path A, 'semantic' for Path B"
+    )
+
+    # ── Session ───────────────────────────────────────────────────
+    session_ttl_hours: int = Field(
+        default=24,
+        description="Hours before a session and its index expire"
+    )
+
+    # ── File Upload ───────────────────────────────────────────────
+    max_file_size_mb: int = Field(
+        default=20,
+        description="Maximum PDF upload size in megabytes"
+    )
+
+    # ── Chunking ──────────────────────────────────────────────────
+    chunk_size_words: int = Field(
+        default=300,
+        description="Number of words per chunk"
+    )
+    chunk_overlap_words: int = Field(
+        default=50,
+        description="Number of words overlapping between consecutive chunks"
+    )
+
+    # ── Retrieval ─────────────────────────────────────────────────
+    top_k_chunks: int = Field(
+        default=3,
+        description="Number of chunks returned by the retriever"
+    )
+
+    # ── Derived Paths (computed from BASE_DIR, not from .env) ─────
+    # These are not env variables — they are always relative to BASE_DIR.
+    # Using @property would break pydantic-settings, so we use
+    # plain class-level Path expressions evaluated after BASE_DIR is set.
+
+    @property
+    def sessions_dir(self) -> Path:
+        return BASE_DIR / "data" / "sessions"
+
+    @property
+    def chromadb_dir(self) -> Path:
+        return BASE_DIR / "data" / "chromadb"
+
+    @property
+    def models_dir(self) -> Path:
+        return BASE_DIR / "models"
+
+    @property
+    def max_file_size_bytes(self) -> int:
+        """Convenience: MB → bytes for direct comparison."""
+        return self.max_file_size_mb * 1024 * 1024
+
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+
+
+# ── Module-level singleton ─────────────────────────────────────────
+# Import this object everywhere else:
+#   from config import settings
+#
+# Never instantiate Settings() again in any other file.
+settings = Settings()
+
+
+# ── Ensure runtime directories exist ──────────────────────────────
+# Called once at import time. If the directories already exist,
+# mkdir(exist_ok=True) does nothing. This prevents FileNotFoundError
+# on the very first run when data/ is empty.
+def _ensure_dirs() -> None:
+    settings.sessions_dir.mkdir(parents=True, exist_ok=True)
+    settings.chromadb_dir.mkdir(parents=True, exist_ok=True)
+    settings.models_dir.mkdir(parents=True, exist_ok=True)
+
+
+_ensure_dirs()
