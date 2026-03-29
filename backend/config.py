@@ -31,6 +31,7 @@ class Settings(BaseSettings):
 
     # ── Retrieval ─────────────────────────────────────────────────
     retrieval_mode: str = Field(
+        # default="tfidf",
         default="tfidf",
         description="'tfidf' for Path A, 'semantic' for Path B"
     )
@@ -63,22 +64,20 @@ class Settings(BaseSettings):
         description="Number of chunks returned by the retriever"
     )
 
-    # ── Derived Paths (computed from BASE_DIR, not from .env) ─────
-    # These are not env variables — they are always relative to BASE_DIR.
-    # Using @property would break pydantic-settings, so we use
-    # plain class-level Path expressions evaluated after BASE_DIR is set.
+ # ── Derived Paths (computed from BASE_DIR, not from .env) ─────
+# These paths are not read from environment variables.
+# They are derived relative to BASE_DIR for consistency.
+#
+# IMPORTANT:
+# These must be defined as Pydantic fields (NOT @property),
+# so they can be overridden in tests (e.g., via monkeypatch).
+#
+# Using @property makes them read-only and breaks test isolation.
 
-    @property
-    def sessions_dir(self) -> Path:
-        return BASE_DIR / "data" / "sessions"
-
-    @property
-    def chromadb_dir(self) -> Path:
-        return BASE_DIR / "data" / "chromadb"
-
-    @property
-    def models_dir(self) -> Path:
-        return BASE_DIR / "models"
+     
+    sessions_dir: Path = BASE_DIR / "data" / "sessions"
+    chromadb_dir: Path = BASE_DIR / "data" / "chromadb"
+    models_dir: Path = BASE_DIR / "models"
 
     @property
     def max_file_size_bytes(self) -> int:
