@@ -1,61 +1,151 @@
 query,intent
-What is backpropagation?,answer
-Define gradient descent,answer
-What does the softmax function do?,answer
-How does dropout prevent overfitting?,answer
-What is a convolutional layer?,answer
-Explain the vanishing gradient problem,answer
-What is the purpose of the bias term?,answer
-How does batch normalization work?,answer
-What is the learning rate?,answer
-What is an epoch in neural network training?,answer
-Define precision and recall,answer
-What is cross-entropy loss?,answer
-How does ReLU differ from sigmoid?,answer
-What is a confusion matrix?,answer
-Explain the role of the optimizer,answer
-What is transfer learning?,answer
-Define hyperparameter tuning,answer
-What is regularization?,answer
-How is F1 score calculated?,answer
-What is a recurrent neural network?,answer
-Summarize the chapter on neural networks,summarise
+What is gradient descent?,answer
+Define overfitting in machine learning,answer
+How does backpropagation work?,answer
+Explain the concept of regularization,answer
+What does the term epochs mean in training?,answer
+Describe the role of a loss function,answer
+Can you explain what a confusion matrix is?,answer
+What does precision mean in classification tasks?,answer
+What is the difference between classification and regression?,answer
+How does supervised learning differ from unsupervised learning?,answer
+Compare precision and recall in model evaluation,answer
+What is the difference between a parameter and a hyperparameter?,answer
+How does gradient descent differ from stochastic gradient descent?,answer
+What distinguishes overfitting from underfitting?,answer
+Compare batch normalization and dropout as regularization techniques,answer
+What is the difference between bagging and boosting?,answer
+How does a CNN differ from an RNN?,answer
+Compare L1 and L2 regularization methods,answer
+What is the difference between a validation set and a test set?,answer
+How does a decision tree differ from a random forest?,answer
+Why does overfitting occur in deep learning models?,answer
+When should dropout be applied during training?,answer
+Why is normalization important before training?,answer
+When is a random forest preferred over a decision tree?,answer
+Why do vanishing gradients occur in deep networks?,answer
+Where does the softmax function apply in a neural network?,answer
+When is cross-validation most useful?,answer
+Why is the learning rate important in gradient descent?,answer
+What are the types of activation functions?,answer
+List the steps involved in training a neural network,answer
+What are the main components of a transformer model?,answer
+List the assumptions of linear regression,answer
+What are the properties of a good loss function?,answer
+What are the different types of regularization techniques?,answer
+List the hyperparameters in a convolutional neural network,answer
+What are the evaluation metrics for classification models?,answer
+What do the notes say about gradient descent?,answer
+According to the document what is a decision boundary?,answer
+What is mentioned about bias-variance tradeoff in the text?,answer
+What does the document explain about attention mechanisms?,answer
+According to the notes how is accuracy calculated?,answer
+What does the text say about the training process?,answer
+What is described in the document regarding dropout?,answer
+What is the significance of the green light in the novel?,answer
+Define the term consideration in a contract,answer
+What were the causes of the French Revolution according to the text?,answer
+What is the author's main argument in chapter 2?,answer
+How does the protagonist change throughout the story?,answer
+What does the contract say about breach of obligation?,answer
+What economic theory is described in the reading?,answer
 Give me an overview of this document,summarise
 What are the main topics covered in these notes?,summarise
-Summarize what was discussed about optimization,summarise
-Give a brief summary of the retrieval section,summarise
-What are the key points about classification?,summarise
-Summarize the introduction,summarise
-Give me a high-level overview of deep learning as covered here,summarise
-What does this document say about evaluation metrics overall?,summarise
-Summarize the section on model selection,summarise
-Provide an overview of the concepts in these notes,summarise
-What topics are discussed about training?,summarise
-Summarize everything about loss functions,summarise
-Give me the gist of what is covered about CNNs,summarise
-What are the major themes in this material?,summarise
-Summarize the key ideas about regularization,summarise
-Give a brief rundown of unsupervised learning as covered,summarise
-Summarize the notes on attention mechanisms,summarise
-What does the document cover regarding data preprocessing?,summarise
-Give an overview of what is discussed about transformers,summarise
+What is this document about?,summarise
+Summarize the entire document for me,summarise
+What does this document cover overall?,summarise
+Give me a high-level summary of these notes,summarise
+What are the major themes in this document?,summarise
+Can you provide an overview of the uploaded file?,summarise
+What subjects does this document address?,summarise
+Give me a general summary of everything in these notes,summarise
+What is the overall scope of this document?,summarise
+Summarize all the key ideas in this document,summarise
+What topics are discussed throughout this material?,summarise
+Give me a broad overview of what these notes contain,summarise
+What is the main focus of this entire document?,summarise
+Summarize chapter 3 for me,summarise
+Give me a summary of the introduction section,summarise
+Summarize the section on neural networks,summarise
+What are the key points in chapter 2?,summarise
+Give me an overview of the conclusion chapter,summarise
+Summarize the methodology section of this document,summarise
+What does chapter 4 cover?,summarise
+Give me a rundown of the first section,summarise
+Summarize the section discussing model evaluation,summarise
+What are the main points covered in the results section?,summarise
+Give me an overview of chapter 5,summarise
+Summarize everything in the background section,summarise
+What does the literature review section discuss?,summarise
+Give me a summary of the experimental section,summarise
+Summarize the key ideas in the discussion chapter,summarise
+Summarize everything covered about regularization in these notes,summarise
+What are the key points about gradient descent in this document?,summarise
+Give me the gist of what is discussed about neural networks,summarise
+Summarize what the document covers about model evaluation,summarise
+What are the main points made about overfitting in these notes?,summarise
+Give me an overview of how the document treats supervised learning,summarise
+Summarize all coverage of attention mechanisms in the text,summarise
+What does this material say about optimization overall?,summarise
+Give me a summary of what is covered about decision trees,summarise
+What general points are made about clustering in these notes?,summarise
+Summarize the document's treatment of loss functions,summarise
+What key points does the document make about data preprocessing?,summarise
+TL;DR on these notes,summarise
+Brief me on what this document covers,summarise
+Give me a breakdown of the main ideas here,summarise
+I need a quick rundown of this material,summarise
+Can you outline the key points in this document?,summarise
+What is the high-level takeaway from these notes?,summarise
+Give me the big picture of what this document discusses,summarise
+What is the gist of this entire document?,summarise
 What is the capital of France?,out-of-scope
-Who won the cricket World Cup?,out-of-scope
-Tell me a joke,out-of-scope
-What is the current stock price of Apple?,out-of-scope
-Write me a poem,out-of-scope
-What is 2 plus 2?,out-of-scope
-How do I cook pasta?,out-of-scope
-What movies are playing this weekend?,out-of-scope
-Who is the president of the United States?,out-of-scope
-What is the weather today?,out-of-scope
-Translate this to French,out-of-scope
-What is the meaning of life?,out-of-scope
-Write code to sort a list in Python,out-of-scope
-What year was the Eiffel Tower built?,out-of-scope
-Can you book a flight for me?,out-of-scope
-What is Bitcoin?,out-of-scope
-Tell me about the history of ancient Rome,out-of-scope
-What are today's news headlines?,out-of-scope
-How do I make a website?,out-of-scope
-What is my GPA?,out-of-scope
+Who won the FIFA World Cup in 2022?,out-of-scope
+What is the boiling point of water?,out-of-scope
+Who wrote Romeo and Juliet?,out-of-scope
+What is the tallest mountain in the world?,out-of-scope
+How many planets are in the solar system?,out-of-scope
+What year did World War II end?,out-of-scope
+Who is the current president of the United States?,out-of-scope
+What is the speed of light?,out-of-scope
+What is the population of China?,out-of-scope
+What language is spoken in Brazil?,out-of-scope
+How far is the moon from the earth?,out-of-scope
+How does ChatGPT work?,out-of-scope
+What is the latest version of PyTorch?,out-of-scope
+Which GPU is best for training large models?,out-of-scope
+What are the best Python libraries for machine learning?,out-of-scope
+How do I install TensorFlow on my computer?,out-of-scope
+What is GPT-4 capable of?,out-of-scope
+Which is better Keras or PyTorch for beginners?,out-of-scope
+How does Google Bard differ from ChatGPT?,out-of-scope
+What cloud platform is best for ML workloads?,out-of-scope
+How much does the OpenAI API cost?,out-of-scope
+What is the Hugging Face model hub?,out-of-scope
+Which laptop is best for running deep learning models?,out-of-scope
+Send these notes to my email,out-of-scope
+Download this document as a PDF,out-of-scope
+Create a quiz based on these notes,out-of-scope
+Book a study session for tomorrow,out-of-scope
+Set a reminder to review this material,out-of-scope
+Search the internet for more on this topic,out-of-scope
+Print these notes for me,out-of-scope
+Share this summary with my classmates,out-of-scope
+Translate this document into Spanish,out-of-scope
+Schedule a meeting with my professor,out-of-scope
+What is my current GPA?,out-of-scope
+How many days until my final exam?,out-of-scope
+What did my professor say about this topic?,out-of-scope
+Am I ready to pass this exam?,out-of-scope
+How much time should I spend studying this?,out-of-scope
+What grade did I get on my last assignment?,out-of-scope
+Which topics should I focus on for my test?,out-of-scope
+How does my understanding compare to my classmates?,out-of-scope
+Are you smarter than ChatGPT?,out-of-scope
+What AI model powers this system?,out-of-scope
+Who built this study assistant?,out-of-scope
+What are your limitations as an AI?,out-of-scope
+How were you trained?,out-of-scope
+Can you access the internet?,out-of-scope
+What data were you built on?,out-of-scope
+Are you better than a human tutor?,out-of-scope
