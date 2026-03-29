@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     # ── Retrieval ─────────────────────────────────────────────────
     retrieval_mode: str = Field(
         # default="tfidf",
-        default="tfidf",
+        default="semantic",
         description="'tfidf' for Path A, 'semantic' for Path B"
     )
 
