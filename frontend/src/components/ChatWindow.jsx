@@ -11,8 +11,9 @@ import DocumentFilter from "./DocumentFilter";
 /**
  * @param {string} sessionId
  * @param {Array}  documents   For the document filter dropdown
+ * @param {Function} onQuizIntent Callback function to handle quiz intents
  */
-export default function ChatWindow({ sessionId, documents }) {
+export default function ChatWindow({ sessionId, documents, onQuizIntent }) {
   const [inputText, setInputText] = useState("");
   const [selectedDocId, setSelectedDocId] = useState(null);
 
@@ -21,6 +22,7 @@ export default function ChatWindow({ sessionId, documents }) {
   const { messages, querying, handleQuery, clearMessages } = useChat(
     sessionId,
     selectedDocId,
+    onQuizIntent,
   );
 
   // Auto-scroll to bottom on new message
