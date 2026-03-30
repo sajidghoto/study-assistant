@@ -16,6 +16,8 @@
 # all-MiniLM-L6-v2 (~90MB) into a local cache (~/.cache/huggingface).
 # This happens once. Subsequent calls use the cached model.
 
+import logging
+
 import chromadb
 from chromadb.config import Settings as ChromaSettings
 from sentence_transformers import SentenceTransformer
@@ -184,6 +186,13 @@ def query_index(
 
     # Embed the query with the same model used during build_index
     query_embedding = model.encode([query_text], show_progress_bar=False).tolist()
+
+
+    # ─── ADD THIS: Log query for analysis ───
+    
+    logger = logging.getLogger(__name__)
+    logger.info(f"[RETRIEVAL] Query: '{query_text}'")
+    logger.info(f"[RETRIEVAL] Session: {session_id}, Top-K: {top_k}")
 
     # Build optional metadata filter
     where_filter = {"session_id": session_id}

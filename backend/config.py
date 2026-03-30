@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     # ── Retrieval ─────────────────────────────────────────────────
     retrieval_mode: str = Field(
         # default="tfidf",
-        default="tfidf",
+        default="semantic",
         description="'tfidf' for Path A, 'semantic' for Path B"
     )
 
@@ -63,6 +63,16 @@ class Settings(BaseSettings):
         default=3,
         description="Number of chunks returned by the retriever"
     )
+
+    retrieval_confidence_threshold: float = Field(
+    default=0.05,
+    description=(
+        "Minimum cosine similarity score for a retrieved chunk to be "
+        "considered relevant. If the top chunk scores below this threshold, "
+        "the system returns 'not found in notes' instead of calling the LLM. "
+        "Range: 0.0–1.0. Semantic retrieval: use 0.25. TF-IDF: use 0.10."
+    )
+)
 
  # ── Derived Paths (computed from BASE_DIR, not from .env) ─────
 # These paths are not read from environment variables.
