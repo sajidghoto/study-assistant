@@ -1,15 +1,8 @@
 # backend/routers/query.py
 #
-# The core endpoint — the full AI pipeline in one request:
-#   POST /session/{session_id}/query
-#
-# Pipeline:
-#   1. Validate session + request body
-#   2. Classify intent (NB / LR classifier)
-#   3. If out-of-scope → return immediately (no retrieval, no LLM)
-#   4. Retrieve top-k chunks (TF-IDF or Semantic)
-#   5. Call Gemini with grounded prompt
-#   6. Return structured response
+# Core query pipeline — now with 5 intent types and
+# retrieval-based confidence gating instead of classifier-based
+# out-of-scope detection.
 
 from fastapi import APIRouter, HTTPException
 
@@ -21,9 +14,13 @@ from modules.session_manager import (
     SessionExpiredError,
 )
 from modules.classifier import predict_intent, ClassifierNotFoundError
-from modules.llm_bridge import generate_answer, LLMError
+from modules.llm_bridge import (
+    generate_answer,
+    generate_quiz,
+    LLMError,
+    QuizParseError,
+)
 
-# ── Import correct retriever ──────────────────────────────────────
 if settings.retrieval_mode == "semantic":
     from modules.retriever_semantic import query_index
 else:
@@ -33,23 +30,9 @@ else:
 router = APIRouter(tags=["Query"])
 
 
-# ── POST /session/{session_id}/query ──────────────────────────────
-
-@router.post("/session/{session_id}/query", status_code=200)
-def query_session(session_id: str, body: QueryRequest) -> dict:
-    """
-    Ask a question against the uploaded documents.
-
-    This endpoint runs the full AI pipeline:
-    classify → retrieve → generate.
-
-    For 'out-of-scope' intent, retrieval and LLM are skipped entirely.
-    This saves API quota and prevents hallucination on off-topic queries.
-    """
-
-    # ── Step 1: Validate session ──────────────────────────────────
+def _guard_session(session_id: str) -> dict:
     try:
-        metadata = load_session(session_id)
+        return load_session(session_id)
     except SessionNotFoundError:
         raise HTTPException(
             status_code=404,
@@ -75,7 +58,31 @@ def query_session(session_id: str, body: QueryRequest) -> dict:
             }
         )
 
-    # ── Step 2: Verify at least one document exists ───────────────
+
+@router.post("/session/{session_id}/query", status_code=200)
+def query_session(session_id: str, body: QueryRequest) -> dict:
+    """
+    Full AI pipeline:
+      classify intent → retrieve → confidence gate → generate response
+
+    Intent types:
+      answer    → concise direct answer (2-4 sentences)
+      explain   → detailed explanation with examples
+      summarise → structured overview of relevant content
+      compare   → side-by-side comparison of concepts
+      quiz      → structured MCQ with 4 options + explanation
+
+    Out-of-scope detection:
+      Handled by the retrieval confidence gate, NOT the classifier.
+      If top retrieved chunk scores below RETRIEVAL_CONFIDENCE_THRESHOLD,
+      the system returns not_found=True without calling the LLM.
+      This is document-aware, unlike a classifier-based approach.
+    """
+
+    # ── Step 1: Validate session ──────────────────────────────────
+    metadata = _guard_session(session_id)
+
+    # ── Step 2: Require at least one document ─────────────────────
     if len(metadata["documents"]) == 0:
         raise HTTPException(
             status_code=400,
@@ -91,8 +98,8 @@ def query_session(session_id: str, body: QueryRequest) -> dict:
 
     # ── Step 3: Validate document_id if provided ──────────────────
     if body.document_id is not None:
-        valid_doc_ids = [d["document_id"] for d in metadata["documents"]]
-        if body.document_id not in valid_doc_ids:
+        valid_ids = [d["document_id"] for d in metadata["documents"]]
+        if body.document_id not in valid_ids:
             raise HTTPException(
                 status_code=400,
                 detail={
@@ -115,30 +122,13 @@ def query_session(session_id: str, body: QueryRequest) -> dict:
                 "success": False,
                 "error": {
                     "code":    "CLASSIFIER_NOT_FOUND",
-                    "message": "The intent classifier is not available. Please train it first.",
-                    "detail":  "Run backend/training/train_classifier.py",
+                    "message": "Intent classifier not found. Run train_classifier.py first.",
+                    "detail":  "backend/training/train_classifier.py",
                 }
             }
         )
 
-    # ── Step 5: Short-circuit for out-of-scope ────────────────────
-    # No retrieval. No LLM call. Instant response.
-    # This is a key system design feature — not just an optimisation.
-    if intent["label"] == "out-of-scope":
-        return {
-            "success": True,
-            "data": {
-                "intent": {
-                    "label":      "out-of-scope",
-                    "confidence": intent["confidence"],
-                },
-                "answer":               "This topic does not appear in your uploaded notes.",
-                "sources":              [],
-                "query_document_scope": "all" if body.document_id is None else body.document_id,
-            }
-        }
-
-    # ── Step 6: Retrieve relevant chunks ─────────────────────────
+    # ── Step 5: Retrieve chunks (ALWAYS — no pre-filter) ──────────
     try:
         chunks = query_index(
             session_id=session_id,
@@ -147,33 +137,88 @@ def query_session(session_id: str, body: QueryRequest) -> dict:
             top_k=settings.top_k_chunks,
         )
     except FileNotFoundError:
-        # Pickle files missing — index was never built or was corrupted
         raise HTTPException(
             status_code=500,
             detail={
                 "success": False,
                 "error": {
                     "code":    "INDEX_NOT_FOUND",
-                    "message": "The search index is missing. Please re-upload your documents.",
-                    "detail":  f"Pickle files not found for session '{session_id}'",
+                    "message": "Search index missing. Please re-upload your documents.",
+                    "detail":  f"session '{session_id}'",
                 }
             }
         )
 
-    # Edge case: retrieval returned zero chunks (e.g., filtered by
-    # a document that has no chunks matching the query at all)
-    if not chunks:
+    # ── Step 6: Confidence gate ───────────────────────────────────
+    # This replaces the old out-of-scope classifier check.
+    # The retriever has now seen the actual document — it knows
+    # whether relevant content exists. The classifier does not.
+    scope = "all" if body.document_id is None else next(
+        (d["document_name"] for d in metadata["documents"]
+         if d["document_id"] == body.document_id),
+        body.document_id
+    )
+
+    top_score = chunks[0]["score"] if chunks else 0.0
+
+    if top_score < settings.retrieval_confidence_threshold:
         return {
             "success": True,
             "data": {
-                "intent":  intent,
-                "answer":  "I could not find relevant content in the selected document.",
-                "sources": [],
-                "query_document_scope": body.document_id or "all",
+                "intent":               intent,
+                "answer":               None,
+                "quiz":                 None,
+                "sources":              [],
+                "query_document_scope": scope,
+                "not_found":            True,
             }
         }
 
-    # ── Step 7: Generate answer via Gemini ────────────────────────
+    # ── Step 7: Format sources ────────────────────────────────────
+    sources = [
+        {
+            "chunk_id":      c["chunk_id"],
+            "document_name": c["document_name"],
+            "text":          c["text"],
+            "score":         c["score"],
+            "chunk_index":   c["chunk_index"],
+        }
+        for c in chunks
+    ]
+
+    # ── Step 8: Generate response based on intent ─────────────────
+    if intent["label"] == "quiz":
+        try:
+            quiz_data = generate_quiz(
+                query=body.query,
+                chunks=chunks,
+            )
+        except (LLMError, QuizParseError) as exc:
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "success": False,
+                    "error": {
+                        "code":    "QUIZ_GENERATION_FAILED",
+                        "message": "Failed to generate quiz question. Please try again.",
+                        "detail":  str(exc),
+                    }
+                }
+            )
+
+        return {
+            "success": True,
+            "data": {
+                "intent":               intent,
+                "answer":               None,
+                "quiz":                 quiz_data,
+                "sources":              sources,
+                "query_document_scope": scope,
+                "not_found":            False,
+            }
+        }
+
+    # All non-quiz intents go through generate_answer
     try:
         answer = generate_answer(
             query=body.query,
@@ -187,43 +232,20 @@ def query_session(session_id: str, body: QueryRequest) -> dict:
                 "success": False,
                 "error": {
                     "code":    "LLM_UNAVAILABLE",
-                    "message": "The AI answer service is temporarily unavailable. Please try again.",
+                    "message": "AI service temporarily unavailable. Please try again.",
                     "detail":  str(exc),
                 }
             }
         )
 
-    # ── Step 8: Format sources for response ──────────────────────
-    sources = [
-        {
-            "chunk_id":      chunk["chunk_id"],
-            "document_name": chunk["document_name"],
-            "text":          chunk["text"],
-            "score":         chunk["score"],
-            "chunk_index":   chunk["chunk_index"],
-        }
-        for chunk in chunks
-    ]
-
-    # ── Step 9: Determine scope label ────────────────────────────
-    if body.document_id is None:
-        scope = "all"
-    else:
-        scope = next(
-            d["document_name"]
-            for d in metadata["documents"]
-            if d["document_id"] == body.document_id
-        )
-
     return {
         "success": True,
         "data": {
-            "intent": {
-                "label":      intent["label"],
-                "confidence": intent["confidence"],
-            },
+            "intent":               intent,
             "answer":               answer,
+            "quiz":                 None,
             "sources":              sources,
             "query_document_scope": scope,
+            "not_found":            False,
         }
     }
