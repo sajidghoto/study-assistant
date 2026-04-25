@@ -1,12 +1,12 @@
 // frontend/src/App.jsx
-//
-// Root component.
-// Owns session state and lays out the two-panel UI.
-// Passes session data down to FileUpload and ChatWindow.
 
-import { useSession }  from './hooks/useSession'
-import FileUpload      from './components/FileUpload'
-import ChatWindow      from './components/ChatWindow'
+import { useState, useCallback } from 'react'
+import { useSession }     from './hooks/useSession'
+import { useQuizHistory } from './hooks/useQuizHistory'
+import FileUpload         from './components/FileUpload'
+import ChatWindow         from './components/ChatWindow'
+import QuizConfirmModal   from './components/QuizConfirmModal'
+import QuizScreen         from './components/QuizScreen'
 
 export default function App() {
   const {
@@ -18,7 +18,49 @@ export default function App() {
     resetSession,
   } = useSession()
 
-  // ── Loading state ─────────────────────────────────────────────
+  const {
+    history,
+    stats,
+    addQuiz,
+    submitAnswer,
+    clearHistory,
+  } = useQuizHistory()
+
+  // ── Quiz state ────────────────────────────────────────────────
+  // pendingQuiz: quiz data received from API, awaiting confirmation
+  // activeQuizId: quiz the student is currently viewing/answering
+  // showQuizScreen: whether quiz UI is open
+  const [pendingQuiz,    setPendingQuiz]    = useState(null)
+  const [activeQuizId,   setActiveQuizId]   = useState(null)
+  const [showQuizScreen, setShowQuizScreen] = useState(false)
+
+  // Called by ChatWindow when the API returns a quiz intent response
+  const handleQuizIntent = useCallback((quizData, topic, sources, scope) => {
+    setPendingQuiz({ quizData, topic, sources, scope })
+  }, [])
+
+  // User confirmed quiz mode
+  const handleQuizConfirm = useCallback(() => {
+    if (!pendingQuiz) return
+    const { quizData, topic, sources, scope } = pendingQuiz
+    const quizId = addQuiz(quizData, topic, sources, scope)
+    setActiveQuizId(quizId)
+    setShowQuizScreen(true)
+    setPendingQuiz(null)
+  }, [pendingQuiz, addQuiz])
+
+  // User cancelled quiz modal
+  const handleQuizCancel = useCallback(() => {
+    setPendingQuiz(null)
+  }, [])
+
+  // Return from quiz screen to chat
+  const handleQuizClose = useCallback(() => {
+    setShowQuizScreen(false)
+    setActiveQuizId(null)
+  }, [])
+
+  // ── Loading ───────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-[#0f1117]">
@@ -41,9 +83,7 @@ export default function App() {
                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h2 className="text-base font-semibold text-slate-200 mb-2">
-            Backend Unreachable
-          </h2>
+          <h2 className="text-base font-semibold text-slate-200 mb-2">Backend Unreachable</h2>
           <p className="text-sm text-slate-500 mb-4">{error}</p>
           <code className="block text-xs bg-slate-800 text-slate-400 rounded-lg px-4 py-3 text-left">
             cd backend<br />
@@ -61,18 +101,14 @@ export default function App() {
     )
   }
 
-  // ── Main layout ───────────────────────────────────────────────
+  // Get current quiz record for QuizScreen
+  const currentQuiz = history.find(q => q.quiz_id === activeQuizId) || null
+
   return (
     <div className="h-screen flex flex-col bg-[#0f1117] text-slate-200 overflow-hidden">
 
-      {/* ── Top bar ─────────────────────────────────────────────── */}
-      <header className="
-        shrink-0 flex items-center justify-between
-        px-6 py-3
-        border-b border-slate-700/50
-        bg-[#0f1117]/80 backdrop-blur-sm
-      ">
-        {/* Logo + title */}
+      {/* ── Top bar ───────────────────────────────────────────── */}
+      <header className="shrink-0 flex items-center justify-between px-6 py-3 border-b border-slate-700/50 bg-[#0f1117]/80 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center">
             <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -85,13 +121,28 @@ export default function App() {
               Study Assistant
             </h1>
             <p className="text-xs text-slate-600 leading-tight">
-              Intent-Aware · Grounded Answers Only
+              Intent-Aware · Grounded · Quiz Mode
             </p>
           </div>
         </div>
 
-        {/* Right side: session info + reset */}
         <div className="flex items-center gap-3">
+          {/* Quiz history shortcut */}
+          {stats.total > 0 && !showQuizScreen && (
+            <button
+              onClick={() => {
+                setActiveQuizId(history[0]?.quiz_id || null)
+                setShowQuizScreen(true)
+              }}
+              className="flex items-center gap-1.5 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/15 rounded-full px-3 py-1.5 transition-all"
+            >
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+              {stats.score}% ({stats.correct}/{stats.attempted})
+            </button>
+          )}
+
           {sessionId && (
             <span className="text-xs text-slate-700 font-mono hidden sm:block">
               {sessionId}
@@ -99,27 +150,18 @@ export default function App() {
           )}
           <button
             onClick={resetSession}
-            className="
-              text-xs text-slate-500 hover:text-slate-300
-              border border-slate-700 hover:border-slate-600
-              rounded-lg px-3 py-1.5 transition-all
-            "
+            className="text-xs text-slate-500 hover:text-slate-300 border border-slate-700 hover:border-slate-600 rounded-lg px-3 py-1.5 transition-all"
           >
             New Session
           </button>
         </div>
       </header>
 
-      {/* ── Two-panel body ───────────────────────────────────────── */}
+      {/* ── Body ─────────────────────────────────────────────────── */}
       <div className="flex-1 flex overflow-hidden">
 
-        {/* Left panel — file upload + document list */}
-        <aside className="
-          w-72 shrink-0
-          border-r border-slate-700/50
-          bg-[#0d0f18]
-          overflow-hidden flex flex-col
-        ">
+        {/* Left panel */}
+        <aside className="w-72 shrink-0 border-r border-slate-700/50 bg-[#0d0f18] overflow-hidden flex flex-col">
           <FileUpload
             sessionId={sessionId}
             documents={documents}
@@ -127,15 +169,35 @@ export default function App() {
           />
         </aside>
 
-        {/* Right panel — chat */}
+        {/* Right panel: chat OR quiz screen */}
         <main className="flex-1 overflow-hidden flex flex-col">
-          <ChatWindow
-            sessionId={sessionId}
-            documents={documents}
-          />
+          {showQuizScreen ? (
+            <QuizScreen
+              currentQuiz={currentQuiz}
+              history={history}
+              stats={stats}
+              onSubmitAnswer={submitAnswer}
+              onClose={handleQuizClose}
+              onClearHistory={clearHistory}
+            />
+          ) : (
+            <ChatWindow
+              sessionId={sessionId}
+              documents={documents}
+              onQuizIntent={handleQuizIntent}
+            />
+          )}
         </main>
-
       </div>
+
+      {/* Quiz confirmation modal (portal-like, rendered over everything) */}
+      {pendingQuiz && (
+        <QuizConfirmModal
+          topic={pendingQuiz.topic}
+          onConfirm={handleQuizConfirm}
+          onCancel={handleQuizCancel}
+        />
+      )}
     </div>
   )
 }

@@ -5,20 +5,30 @@ What does the softmax function do?,answer
 How does dropout prevent overfitting?,answer
 What is a convolutional layer?,answer
 Explain the vanishing gradient problem,answer
-What is the purpose of the bias term?,answer
+What is the purpose of the bias term in a neural network?,answer
 How does batch normalization work?,answer
 What is the learning rate?,answer
-What is an epoch in neural network training?,answer
+What is an epoch in machine learning?,answer
 Define precision and recall,answer
 What is cross-entropy loss?,answer
 How does ReLU differ from sigmoid?,answer
 What is a confusion matrix?,answer
-Explain the role of the optimizer,answer
+What is the role of the optimizer in training?,answer
 What is transfer learning?,answer
 Define hyperparameter tuning,answer
-What is regularization?,answer
+What is L2 regularization?,answer
 How is F1 score calculated?,answer
 What is a recurrent neural network?,answer
+What is supervised learning?,answer
+What is the vanishing gradient problem?,answer
+What does PCA stand for?,answer
+What is K-means clustering?,answer
+What is a support vector machine?,answer
+What is the Adam optimizer?,answer
+How does logistic regression work?,answer
+What is a decision tree?,answer
+What is the difference between a parameter and a hyperparameter?,answer
+What is the purpose of the activation function?,answer
 Summarize the chapter on neural networks,summarise
 Give me an overview of this document,summarise
 What are the main topics covered in these notes?,summarise
@@ -39,23 +49,48 @@ Give a brief rundown of unsupervised learning as covered,summarise
 Summarize the notes on attention mechanisms,summarise
 What does the document cover regarding data preprocessing?,summarise
 Give an overview of what is discussed about transformers,summarise
-What is the capital of France?,out-of-scope
-Who won the cricket World Cup?,out-of-scope
-Tell me a joke,out-of-scope
-What is the current stock price of Apple?,out-of-scope
-Write me a poem,out-of-scope
-What is 2 plus 2?,out-of-scope
-How do I cook pasta?,out-of-scope
-What movies are playing this weekend?,out-of-scope
-Who is the president of the United States?,out-of-scope
-What is the weather today?,out-of-scope
-Translate this to French,out-of-scope
-What is the meaning of life?,out-of-scope
-Write code to sort a list in Python,out-of-scope
-What year was the Eiffel Tower built?,out-of-scope
-Can you book a flight for me?,out-of-scope
-What is Bitcoin?,out-of-scope
-Tell me about the history of ancient Rome,out-of-scope
-What are today's news headlines?,out-of-scope
-How do I make a website?,out-of-scope
-What is my GPA?,out-of-scope
+Explain how backpropagation works in detail,explain
+Can you walk me through gradient descent step by step?,explain
+Help me understand how attention mechanisms work,explain
+Break down how a transformer model processes input,explain
+Explain the intuition behind support vector machines,explain
+Help me understand why overfitting happens,explain
+Can you elaborate on how batch normalization helps training?,explain
+Explain the concept of the vanishing gradient problem in depth,explain
+Walk me through how K-means clustering works,explain
+Explain how the chain rule applies to backpropagation,explain
+Help me understand the difference between precision and recall,explain
+Can you explain what happens during the forward pass?,explain
+Explain why ReLU is preferred over sigmoid in deep networks,explain
+Help me understand how cross-entropy loss works,explain
+Explain the intuition behind regularization techniques,explain
+What is the difference between supervised and unsupervised learning?,compare
+How does logistic regression compare to Naive Bayes?,compare
+What is the difference between overfitting and underfitting?,compare
+Compare batch gradient descent and stochastic gradient descent,compare
+How does ReLU differ from sigmoid and tanh?,compare
+What is the difference between precision and recall?,compare
+Compare L1 and L2 regularization,compare
+How is a decision tree different from a random forest?,compare
+What is the difference between classification and regression?,compare
+Compare TF-IDF retrieval and semantic retrieval,compare
+How does K-means differ from hierarchical clustering?,compare
+What is the difference between a validation set and a test set?,compare
+How does dropout differ from regularization?,compare
+Compare Adam optimizer with standard gradient descent,compare
+What is the difference between deep learning and machine learning?,compare
+Quiz me on backpropagation,quiz
+Test my knowledge of gradient descent,quiz
+Give me a practice question about overfitting,quiz
+Quiz me on neural network activation functions,quiz
+I want to be tested on supervised learning,quiz
+Give me a multiple choice question about regularization,quiz
+Test me on the confusion matrix,quiz
+Quiz me on the difference between precision and recall,quiz
+Can you quiz me on clustering algorithms?,quiz
+Give me a practice exam question about the Adam optimizer,quiz
+Test my understanding of the vanishing gradient problem,quiz
+Quiz me on loss functions,quiz
+Give me a question to test my knowledge of PCA,quiz
+I want to practice questions about model evaluation,quiz
+Test me on what I know about transfer learning,quiz

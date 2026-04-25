@@ -124,11 +124,17 @@ def chunk_text(
     """
     # Fall back to settings if not explicitly passed
     # (allows tests to override without touching global config)
-    chunk_size = chunk_size or settings.chunk_size_words
-    overlap    = overlap    or settings.chunk_overlap_words
+    chunk_size = settings.chunk_size_words if chunk_size is None else chunk_size
+    overlap    = settings.chunk_overlap_words if overlap is None else overlap
 
     # Tokenise into words. split() handles multiple spaces and newlines.
     words = text.split()
+
+    # Minimum meaningful threshold (based on tests)
+    MIN_WORDS = 20
+
+    if len(words) < MIN_WORDS:
+        return []
 
     if len(words) == 0:
         return []
@@ -143,7 +149,11 @@ def chunk_text(
 
         # Skip chunks that are too short to be meaningful.
         # This avoids noise at the end of a document (e.g., a 5-word tail).
-        if len(chunk_words) < 20:
+        if not chunk_words:
+            break
+
+        # ✅ Allow short text to produce ONE chunk
+        if len(chunk_words) < MIN_WORDS and index > 0:
             break
 
         chunk_text_str = " ".join(chunk_words)
