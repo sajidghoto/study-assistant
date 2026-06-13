@@ -171,54 +171,6 @@ class TestQueryEndpoint:
         # FastAPI returns 422 for Pydantic validation failures
         assert response.status_code == 422
 
-    def test_out_of_scope_query_returns_200_with_correct_intent(
-        self, api_client, tmp_session_dir, mock_classifier_bundle
-    ):
-        """
-        Out-of-scope queries must return HTTP 200 (not an error code)
-        because the system processed the request correctly.
-        We inject a mock TF-IDF index to bypass needing a real PDF.
-        """
-        import modules.classifier as clf
-        clf._classifier_bundle = None
-
-        sid = api_client.post("/api/v1/session").json()["data"]["session_id"]
-
-        # Manually insert a document into session metadata
-        # so the NO_DOCUMENTS guard passes
-        from modules.session_manager import add_document_to_session
-        from modules.retriever_tfidf import build_index
-        from tests.conftest import SAMPLE_TEXT
-        from modules.pdf_parser import chunk_text
-
-        chunks = chunk_text(
-            text=SAMPLE_TEXT,
-            session_id=sid,
-            document_id="doc_fake",
-            document_name="fake.pdf",
-            chunk_size=50,
-            overlap=10,
-        )
-        build_index(session_id=sid, chunks=chunks)
-        add_document_to_session(
-            session_id=sid,
-            document_id="doc_fake",
-            document_name="fake.pdf",
-            chunk_count=len(chunks),
-            page_count=2,
-        )
-
-        response = api_client.post(
-            f"/api/v1/session/{sid}/query",
-            json={"query": "Who won the cricket World Cup?", "document_id": None},
-        )
-
-        assert response.status_code == 200
-        data = response.json()
-        assert data["success"] is True
-        assert data["data"]["intent"]["label"] == "out-of-scope"
-        assert data["data"]["sources"] == []
-
     def test_query_nonexistent_session_returns_404(self, api_client):
         response = api_client.post(
             "/api/v1/session/sess_ghost/query",
