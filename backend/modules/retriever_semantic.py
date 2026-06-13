@@ -17,12 +17,23 @@
 # This happens once. Subsequent calls use the cached model.
 
 import logging
+import os
+import warnings
+from contextlib import suppress
+
+# Disable ChromaDB telemetry at module load time to prevent initialization errors
+os.environ["CHROMA_TELEMETRY_DISABLED"] = "True"
+os.environ["CHROMA_LOG_LEVEL"] = "error"
 
 import chromadb
 from chromadb.config import Settings as ChromaSettings
 from sentence_transformers import SentenceTransformer
 
 from config import settings
+
+# Suppress telemetry-related warnings and errors
+warnings.filterwarnings("ignore", message=".*telemetry.*")
+logging.getLogger("chromadb").setLevel(logging.ERROR)
 
 
 # ── Model singleton ───────────────────────────────────────────────
@@ -47,6 +58,17 @@ def _get_model() -> SentenceTransformer:
     return _embedding_model
 
 
+def load_model() -> None:
+    """
+    Eagerly load the embedding model at application startup.
+    
+    This function is called by FastAPI's lifespan context manager
+    to ensure the model is available before serving requests.
+    Subsequent calls are no-ops (model is cached as a singleton).
+    """
+    _get_model()
+
+
 # ── ChromaDB client ───────────────────────────────────────────────
 
 def _get_chroma_client(session_id: str) -> chromadb.PersistentClient:
@@ -61,7 +83,10 @@ def _get_chroma_client(session_id: str) -> chromadb.PersistentClient:
 
     return chromadb.PersistentClient(
         path=str(chroma_path),
-        settings=ChromaSettings(anonymized_telemetry=False)
+        settings=ChromaSettings(
+            anonymized_telemetry=False,
+            allow_reset=True
+        )
     )
 
 
