@@ -81,24 +81,6 @@ class TestPredictIntent:
         result = predict_intent("Summarize the chapter on neural networks")
         assert result["label"] == "summarise"
 
-    # ── Out of scope intent ────────────────────────────────────────
-
-    def test_out_of_scope_query_returns_correct_label(
-        self, tmp_session_dir, mock_classifier_bundle
-    ):
-        import modules.classifier as clf
-        clf._classifier_bundle = None
-        result = predict_intent("Who won the cricket World Cup?")
-        assert result["label"] == "out-of-scope"
-
-    def test_out_of_scope_joke_request(
-        self, tmp_session_dir, mock_classifier_bundle
-    ):
-        import modules.classifier as clf
-        clf._classifier_bundle = None
-        result = predict_intent("Tell me a joke")
-        assert result["label"] == "out-of-scope"
-
     # ── Response structure ─────────────────────────────────────────
 
     def test_response_always_has_label_and_confidence(
@@ -120,7 +102,7 @@ class TestPredictIntent:
     ):
         import modules.classifier as clf
         clf._classifier_bundle = None
-        valid_labels = {"answer", "summarise", "out-of-scope"}
+        valid_labels = {"answer", "explain", "summarise", "compare", "quiz"}
         for query in ["What is ReLU?", "Give overview", "Tell me a joke"]:
             result = predict_intent(query)
             assert result["label"] in valid_labels

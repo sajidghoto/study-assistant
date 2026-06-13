@@ -171,13 +171,11 @@ def delete_document(session_id: str, document_id: str) -> dict:
                 ]
                 rebuild_index(session_id, remaining)
         else:
-            # For semantic: pass remaining chunk IDs
-            # rebuild_index derives what to delete internally
+            # For semantic: pass remaining document IDs
+            # rebuild_index uses these to determine what to delete
             remaining_docs = updated_metadata["documents"]
-            remaining_ids  = {d["document_id"] for d in remaining_docs}
-            # Pass empty remaining_chunks — rebuild_index for semantic
-            # uses the collection directly to find what to delete
-            rebuild_index(session_id, [])
+            remaining_ids = [d["document_id"] for d in remaining_docs]
+            rebuild_index(session_id, remaining_ids)
 
     except Exception as exc:
         # Index rebuild failure is logged but does not fail the request.

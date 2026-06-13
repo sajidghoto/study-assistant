@@ -15,7 +15,15 @@
 
 import pytest
 from unittest.mock import MagicMock, patch
-from modules.llm_bridge import _build_user_prompt, generate_answer, LLMError
+from modules.llm_bridge import (
+    _build_answer_prompt,
+    _build_explain_prompt,
+    _build_summarise_prompt,
+    _build_compare_prompt,
+    _build_quiz_prompt,
+    generate_answer,
+    LLMError,
+)
 
 
 # ── Sample data ───────────────────────────────────────────────────
@@ -38,66 +46,62 @@ SAMPLE_CHUNKS = [
 ]
 
 
-class TestBuildUserPrompt:
+class TestBuildAnswerPrompt:
 
     def test_includes_query_in_output(self):
-        prompt = _build_user_prompt(
+        prompt = _build_answer_prompt(
             query="What is backpropagation?",
             chunks=SAMPLE_CHUNKS,
-            intent="answer",
         )
         assert "What is backpropagation?" in prompt
 
     def test_includes_chunk_text(self):
-        prompt = _build_user_prompt(
+        prompt = _build_answer_prompt(
             query="test query",
             chunks=SAMPLE_CHUNKS,
-            intent="answer",
         )
         assert "gradient of the loss" in prompt
         assert "chain rule" in prompt
 
     def test_includes_source_labels(self):
-        prompt = _build_user_prompt(
+        prompt = _build_answer_prompt(
             query="test",
             chunks=SAMPLE_CHUNKS,
-            intent="answer",
         )
         assert "[Source 1" in prompt
         assert "[Source 2" in prompt
 
     def test_includes_document_name_in_source_label(self):
-        prompt = _build_user_prompt(
+        prompt = _build_answer_prompt(
             query="test",
             chunks=SAMPLE_CHUNKS,
-            intent="answer",
         )
         assert "lecture_3.pdf" in prompt
 
     def test_answer_intent_uses_answer_instruction(self):
-        prompt = _build_user_prompt(
+        prompt = _build_answer_prompt(
             query="What is X?",
             chunks=SAMPLE_CHUNKS,
-            intent="answer",
         )
         assert "Answer the following question" in prompt
 
-    def test_summarise_intent_uses_summary_instruction(self):
-        prompt = _build_user_prompt(
-            query="Summarize this",
-            chunks=SAMPLE_CHUNKS,
-            intent="summarise",
-        )
-        assert "summary" in prompt.lower()
-
     def test_empty_chunks_does_not_crash(self):
         # Edge case: called with empty list (defensive)
-        prompt = _build_user_prompt(
+        prompt = _build_answer_prompt(
             query="test",
             chunks=[],
-            intent="answer",
         )
         assert "test" in prompt
+
+
+class TestBuildSummarisePrompt:
+
+    def test_summarise_intent_uses_summary_instruction(self):
+        prompt = _build_summarise_prompt(
+            query="Summarize this",
+            chunks=SAMPLE_CHUNKS,
+        )
+        assert "summary" in prompt.lower()
 
 
 class TestGenerateAnswer:
