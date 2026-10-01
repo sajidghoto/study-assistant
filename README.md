@@ -840,15 +840,6 @@ The frontend receives this as a structured quiz card for interactive practice.
 
 ---
 
-## Team
-
-
-| Member | Role | Primary Deliverable |
-|---|---|---|
-| Umar Daraz (053-23-0004) | Backend — Data Pipeline | PDF parsing, chunking, TF-IDF retriever, session management |
-| Sajid Ali (023-23-0084) | Backend — AI/ML | Intent classifier, evaluation metrics, Gemini bridge, report |
-| Member 3 | Frontend | React UI, Axios integration, all components |
-
 ---
 
 ## Running Tests
