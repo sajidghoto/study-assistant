@@ -4,6 +4,8 @@
 #   GET    /session/{session_id}/documents
 #   DELETE /session/{session_id}/document/{document_id}
 
+import logging
+
 from fastapi import APIRouter, HTTPException
 
 from config import settings
@@ -15,10 +17,11 @@ from modules.session_manager import (
     SessionExpiredError,
 )
 
+logger = logging.getLogger(__name__)
+
 # ── Import correct retriever for rebuild after deletion ───────────
 if settings.retrieval_mode == "semantic":
-    from modules.retriever_semantic import rebuild_index
-    from modules.retriever_semantic import query_index  # used to load all chunks
+    from modules.retriever_semantic import retain_documents
 else:
     from modules.retriever_tfidf import rebuild_index
     from modules.retriever_tfidf import _load_pickle, _chunks_path  # type: ignore
@@ -115,7 +118,7 @@ def delete_document(session_id: str, document_id: str) -> dict:
         incrementally. We must re-fit on remaining chunks.
 
         Path B (ChromaDB): Deletion by ID is supported natively —
-        no full rebuild required (handled inside rebuild_index).
+        retained documents are passed to retain_documents().
     """
     metadata = _guard_session(session_id)
 
@@ -140,6 +143,49 @@ def delete_document(session_id: str, document_id: str) -> dict:
         if d["document_id"] == document_id
     )
 
+    # ── Rebuild retrieval index ───────────────────────────────────
+    # Update the index before metadata so an index failure is visible and
+    # does not report success while leaving the document registered.
+    try:
+        if settings.retrieval_mode == "tfidf":
+            chunks_path = _chunks_path(session_id)
+            if not chunks_path.exists():
+                raise FileNotFoundError(
+                    f"TF-IDF chunks missing for session '{session_id}'."
+                )
+            all_chunks = _load_pickle(chunks_path)
+            remaining = [
+                chunk for chunk in all_chunks
+                if chunk["document_id"] != document_id
+            ]
+            rebuild_index(session_id, remaining)
+        else:
+            remaining_ids = [
+                doc["document_id"]
+                for doc in metadata["documents"]
+                if doc["document_id"] != document_id
+            ]
+            retain_documents(session_id, remaining_ids)
+
+    except Exception as exc:
+        logger.exception(
+            "Failed to update retrieval index after deleting document %s "
+            "from session %s",
+            document_id,
+            session_id,
+        )
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "success": False,
+                "error": {
+                    "code":    "INDEX_UPDATE_FAILED",
+                    "message": "Failed to update the search index. Please try again.",
+                    "detail":  str(exc),
+                }
+            }
+        ) from exc
+
     # ── Remove from metadata ──────────────────────────────────────
     try:
         updated_metadata = remove_document_from_session(session_id, document_id)
@@ -154,34 +200,7 @@ def delete_document(session_id: str, document_id: str) -> dict:
                     "detail":  str(exc),
                 }
             }
-        )
-
-    # ── Rebuild retrieval index ───────────────────────────────────
-    # Get all remaining chunks EXCEPT the deleted document's.
-    # For TF-IDF: load chunks.pkl, filter by document_id.
-    # For Semantic: rebuild_index handles deletion internally.
-    try:
-        if settings.retrieval_mode == "tfidf":
-            chunks_path = _chunks_path(session_id)
-            if chunks_path.exists():
-                all_chunks = _load_pickle(chunks_path)
-                remaining  = [
-                    c for c in all_chunks
-                    if c["document_id"] != document_id
-                ]
-                rebuild_index(session_id, remaining)
-        else:
-            # For semantic: pass remaining document IDs
-            # rebuild_index uses these to determine what to delete
-            remaining_docs = updated_metadata["documents"]
-            remaining_ids = [d["document_id"] for d in remaining_docs]
-            rebuild_index(session_id, remaining_ids)
-
-    except Exception as exc:
-        # Index rebuild failure is logged but does not fail the request.
-        # The metadata has already been updated. The index is stale but
-        # recoverable — the next upload will trigger a full rebuild.
-        print(f"[WARN] Index rebuild failed after document deletion: {exc}")
+        ) from exc
 
     return {
         "success": True,

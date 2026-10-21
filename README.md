@@ -216,7 +216,7 @@ You also need a **Google Gemini API key** (free tier):
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/study-assistant.git
+git clone https://github.com/sajidghoto/study-assistant.git
 cd study-assistant
 ```
 
@@ -283,23 +283,26 @@ quiz         15
 
 Train: 76 | Test: 19
 
-5-FOLD CROSS-VALIDATION
-MultinomialNB        | CV F1 (weighted): 0.XX (±0.XX)
-LogisticRegression   | CV F1 (weighted): 0.XX (±0.XX)
+5-FOLD CROSS-VALIDATION (on training set)
+MultinomialNB        | CV F1: 0.706 (±0.090)
+LogisticRegression   | CV F1: 0.722 (±0.053)
 
-Winner: MultinomialNB (F1=0.XX)
+TEST SET RESULTS (19 examples)
+MultinomialNB        | F1 (weighted): 0.843
+LogisticRegression   | F1 (weighted): 0.892
+Winner: LogisticRegression (F1=0.892)
 Model saved → backend/models/intent_classifier.pkl
 
-Generating evaluation artefacts...
-✓ Confusion matrix saved
-✓ Classification report saved
-✓ Model comparison saved
+Confusion matrix saved
+Report saved
+Comparison saved
 ```
 
-This produces three files:
+This produces the trained model and three evaluation artefacts:
 - `models/intent_classifier.pkl` — the trained 5-class model
 - `evaluation/results/confusion_matrix.png` — 5×5 heatmap of classification errors
 - `evaluation/results/classification_report.txt` — per-class metrics (precision, recall, F1)
+- `evaluation/results/model_comparison.csv` — held-out weighted F1 comparison
 
 ### 5. Frontend setup
 
@@ -636,10 +639,14 @@ RETRIEVAL_MODE=semantic   # or tfidf
 
 Run the training script to generate all classifier evaluation outputs automatically. Key metrics to report:
 
-- Weighted F1 score (target: ≥ 0.80)
+- Latest observed held-out weighted F1: **0.892** (Logistic Regression); MultinomialNB: **0.843**
+- 5-fold cross-validation weighted F1: Logistic Regression **0.722 ± 0.053**; MultinomialNB **0.706 ± 0.090**
+- Target weighted F1 score: ≥ 0.80
 - Per-class precision, recall, F1
 - Confusion matrix
 - Naive Bayes vs Logistic Regression comparison
+
+These results are from a 19-example held-out test split of the 95-example dataset. Treat them as an initial baseline; the small test set means scores can vary with new data or a changed split.
 
 ### Retrieval — Precision@3
 
@@ -648,7 +655,7 @@ cd backend
 python evaluation/precision_at_3.py
 ```
 
-This script loads 20 manually prepared test questions, retrieves top-3 chunks for each, and outputs a CSV for manual relevance marking. Final score = average proportion of relevant chunks across 20 queries.
+This script loads the 20 questions in `backend/evaluation/test_queries.csv`, retrieves the top 3 chunks for each, and outputs a CSV for manual relevance marking. Mark every retrieved chunk as relevant or not relevant before computing; incomplete annotations, retrieval errors, or rankings without all 3 results are rejected. Final score = average proportion of relevant chunks across 20 queries.
 
 Results are saved to `evaluation/results/precision_at_3_results.csv`.
 
@@ -871,7 +878,7 @@ pytest tests/test_classifier.py -v
 
 ```bash
 # 1. Clone and enter project
-git clone https://github.com/your-username/study-assistant.git
+git clone https://github.com/sajidghoto/study-assistant.git
 cd study-assistant
 
 # 2. Backend
