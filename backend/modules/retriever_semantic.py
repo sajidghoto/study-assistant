@@ -2,15 +2,12 @@
 #
 # Path B: Semantic retrieval using sentence-transformers + ChromaDB.
 #
-# This module has the IDENTICAL public interface as retriever_tfidf.py:
+# This module shares the indexing and query interface with retriever_tfidf.py:
 #   - build_index(session_id, chunks)
-#   - rebuild_index(session_id, remaining_chunks)
 #   - query_index(session_id, query_text, document_id, top_k)
 #
-# The classifier.py and routers never import this directly.
-# The retriever is selected in modules/retriever.py (a thin router)
-# based on settings.retrieval_mode. This keeps all swap logic in
-# one place.
+# Document deletion is backend-specific: TF-IDF rebuilds from retained chunks,
+# while ChromaDB removes vectors using retained document IDs.
 #
 # IMPORTANT: On first use, sentence-transformers downloads the model
 # all-MiniLM-L6-v2 (~90MB) into a local cache (~/.cache/huggingface).
@@ -156,27 +153,25 @@ def build_index(session_id: str, chunks: list[dict]) -> None:
     )
 
 
-def rebuild_index(session_id: str, remaining_chunks: list[dict]) -> None:
+def retain_documents(
+    session_id: str,
+    remaining_document_ids: list[str],
+) -> None:
     """
-    Delete all vectors for removed document and keep the rest.
+    Remove vectors belonging to documents that are no longer in the session.
 
-    ChromaDB supports deletion by metadata filter, so we only
-    delete the removed document's vectors — not the whole collection.
-
-    This is called with the chunks that SHOULD REMAIN.
-    We infer which document was removed by comparing chunk IDs
-    in the collection against remaining_chunk IDs.
+    ChromaDB supports deletion by ID. Read the indexed document metadata,
+    then delete chunks whose document ID is not in the retained set.
     """
     collection = _get_collection(session_id)
 
-    # Get all IDs currently in the collection
-    all_ids_in_db = set(collection.get()["ids"])
-
-    # IDs that should remain
-    remaining_ids = {c["chunk_id"] for c in remaining_chunks}
-
-    # IDs to delete = in DB but not in remaining
-    ids_to_delete = list(all_ids_in_db - remaining_ids)
+    indexed = collection.get(include=["metadatas"])
+    remaining_ids = set(remaining_document_ids)
+    ids_to_delete = [
+        chunk_id
+        for chunk_id, metadata in zip(indexed["ids"], indexed["metadatas"])
+        if metadata["document_id"] not in remaining_ids
+    ]
 
     if ids_to_delete:
         collection.delete(ids=ids_to_delete)

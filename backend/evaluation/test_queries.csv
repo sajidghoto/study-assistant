@@ -1,0 +1,20 @@
+What is machine learning?
+What are the three types of machine learning?
+What is supervised learning?
+What is classification in machine learning?
+What is regression?
+How do machines learn patterns without explicit programming?
+What type of learning uses labeled datasets?
+How does a model predict continuous values?
+What does it mean when a model separates data into categories?
+How do algorithms learn without any labeled outputs?
+Why is model evaluation important in machine learning?
+What is the difference between training validation and test sets?
+Why is accuracy not always a reliable metric?
+How does overfitting affect model performance?
+What is the role of regularization?
+How does Retrieval-Augmented Generation reduce hallucination?
+What is the limitation of TF-IDF in retrieval systems?
+Why are dense vectors better for semantic search?
+How does a vector database like ChromaDB help retrieval?
+What happens inside the RAG pipeline when a user asks a question?

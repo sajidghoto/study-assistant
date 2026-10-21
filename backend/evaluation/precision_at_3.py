@@ -54,6 +54,7 @@ TEST_QUERIES_PATH = Path(__file__).parent / "test_queries.csv"
 RESULTS_DIR = Path(__file__).parent / "results"
 RESULTS_CSV = RESULTS_DIR / "precision_at_3_results.csv"
 SCORES_TXT = RESULTS_DIR / "precision_at_3_scores.txt"
+EVALUATION_K = 3
 
 # Color codes for console output
 GREEN = "\033[92m"
@@ -193,7 +194,7 @@ def evaluate_retrieval(session_id: str) -> None:
     print(f"{GREEN}✓{END} Session valid. Documents: {doc_count}, Chunks: {chunk_count}\n")
 
     # ── Retrieve for each query ───────────────────────────────────
-    print(f"Retrieving top-{settings.top_k_chunks} chunks for each query...")
+    print(f"Retrieving top-{EVALUATION_K} chunks for each query...")
     print(f"Retrieval mode: {settings.retrieval_mode.upper()}")
     print(f"Confidence threshold: {settings.retrieval_confidence_threshold}\n")
 
@@ -206,7 +207,7 @@ def evaluate_retrieval(session_id: str) -> None:
                 session_id=session_id,
                 query_text=query,
                 document_id=None,  # Search all documents
-                top_k=settings.top_k_chunks,
+                top_k=EVALUATION_K,
             )
 
             # Format chunks for CSV
@@ -330,11 +331,41 @@ def compute_precision_at_3(
         )
 
     df = pd.read_csv(results_csv)
+    required_columns = {"query_id", "chunk_rank", "chunk_id", "is_relevant"}
+    missing_columns = required_columns - set(df.columns)
+    if missing_columns:
+        raise ValueError(
+            "Results CSV is missing required columns: "
+            + ", ".join(sorted(missing_columns))
+        )
+    if df.empty:
+        raise ValueError("Results CSV contains no retrieval rows.")
+    if (df["chunk_id"] == "ERROR").any():
+        raise ValueError(
+            "The results contain retrieval errors. Regenerate the results "
+            "after fixing the retrieval failures."
+        )
 
-    # Parse relevance: case-insensitive matching
-    df["is_relevant_bool"] = df["is_relevant"].fillna("").str.lower().isin(
-        ["y", "yes", "1", "true"]
+    annotations = df["is_relevant"].map(
+        lambda value: str(value).strip().lower() if pd.notna(value) else ""
     )
+    valid_annotations = {
+        "y", "yes", "1", "true",
+        "n", "no", "0", "false",
+    }
+    invalid_annotations = sorted(set(annotations) - valid_annotations - {""})
+    if invalid_annotations:
+        raise ValueError(
+            "Invalid relevance annotation(s): "
+            + ", ".join(invalid_annotations)
+        )
+    unannotated_count = int((annotations == "").sum())
+    if unannotated_count:
+        raise ValueError(
+            f"{unannotated_count} retrieved chunk(s) are not annotated. "
+            "Mark every row Y/yes/1/true or N/no/0/false before computing."
+        )
+    df["is_relevant_bool"] = annotations.isin(["y", "yes", "1", "true"])
 
     # Group by query and calculate Precision@3
     per_query_scores = {}
@@ -342,13 +373,16 @@ def compute_precision_at_3(
     for query_id in sorted(df["query_id"].unique()):
         query_chunks = df[df["query_id"] == query_id]
 
-        # Should have exactly 3 chunks
-        if len(query_chunks) < 3:
-            print(f"{YELLOW}Warning: Query {query_id} has {len(query_chunks)} chunks (expected 3){END}")
-            continue
+        ranks = pd.to_numeric(query_chunks["chunk_rank"], errors="coerce")
+        if len(query_chunks) != EVALUATION_K or set(ranks) != set(
+            range(1, EVALUATION_K + 1)
+        ):
+            raise ValueError(
+                f"Query {query_id} must have exactly ranks 1-{EVALUATION_K}."
+            )
 
         relevant_count = query_chunks["is_relevant_bool"].sum()
-        precision_at_3 = relevant_count / 3.0
+        precision_at_3 = relevant_count / float(EVALUATION_K)
         per_query_scores[query_id] = precision_at_3
 
     # Overall Precision@3
