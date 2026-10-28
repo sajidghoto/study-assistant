@@ -168,9 +168,24 @@ Use `/docs` for request schemas and interactive endpoint details. A query can op
 
 ### Retrieval
 
-`backend/evaluation/precision_at_3.py` retrieves the top three chunks for each question in `backend/evaluation/test_queries.csv` and exports them for manual relevance annotation. Its computation mode rejects missing or incomplete annotations and retrieval errors.
+`backend/evaluation/rag_eval_dataset.jsonl` is the canonical 72-question dataset: 63 answerable and 9 unanswerable questions with evidence phrases. The automatic evaluator uses phrase matching as a reproducible diagnostic, not as human-verified relevance.
 
-The question set and annotation process are still being developed. There is not yet a completed, fully annotated retrieval benchmark, so no Precision@3 result is claimed here.
+Run the automatic evaluation from `backend/` after uploading the two source PDFs into one session:
+
+```powershell
+$env:RETRIEVAL_MODE = "semantic" # or "tfidf"; re-index the PDFs after switching
+python -m evaluation.retrieval_eval --session <session_id>
+```
+
+The evaluator writes automatic metrics, per-question results, and a human annotation template for the fixed 20-question subset in `evaluation/human_eval_ids.json`. Review the retrieved passage text against the source PDFs, fill `is_relevant` with `Y` or `N`, and score the completed file with:
+
+```powershell
+python -m evaluation.retrieval_eval --annotations evaluation/results/human_annotations_semantic_template.csv
+```
+
+Human-annotated Precision@3 is reported separately from automatic evidence-key Precision@3. The template is not yet annotated, and the saved automatic report is historical; neither should be presented as a completed, human-validated benchmark. Compare both retrieval modes using the same dataset and annotation procedure. Do not tune the confidence threshold on the final evaluation set; use a held-out split for that in Phase 1.
+
+GitHub Actions runs the complete Python 3.11 backend test suite and the frontend lint/build checks on pushes and pull requests.
 
 ## Tests and checks
 

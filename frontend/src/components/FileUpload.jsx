@@ -5,7 +5,7 @@
 
 import { useRef } from "react";
 import { useUpload } from "../hooks/useUpload";
-import { formatFileSize, stripExtension } from "../../utils/formatters";
+import { stripExtension } from "../../utils/formatters";
 
 /**
  * @param {string}   sessionId

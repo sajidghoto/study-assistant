@@ -22,3 +22,7 @@ Thumbs.db
 *.pyc
 
 .github/
+!.github/
+!.github/workflows/
+!.github/workflows/**
+.github/copilot-instructions.md

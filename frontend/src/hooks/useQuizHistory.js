@@ -18,21 +18,18 @@
 //   is_correct:     bool   | null
 // }
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { QUIZ_HISTORY_KEY } from '../../utils/constants'
 
 export function useQuizHistory() {
-  const [history, setHistory] = useState([])
-
-  // Load from localStorage on mount
-  useEffect(() => {
+  const [history, setHistory] = useState(() => {
     try {
       const stored = localStorage.getItem(QUIZ_HISTORY_KEY)
-      if (stored) setHistory(JSON.parse(stored))
+      return stored ? JSON.parse(stored) : []
     } catch {
-      setHistory([])
+      return []
     }
-  }, [])
+  })
 
   // Persist to localStorage whenever history changes
   const persist = useCallback((newHistory) => {
