@@ -11,6 +11,10 @@ backend/data/chromadb/*
 
 # Evaluation outputs (generated, not source)
 backend/evaluation/results/*
+!backend/evaluation/results/auto_eval_tfidf.txt
+!backend/evaluation/results/auto_eval_tfidf_items.csv
+!backend/evaluation/results/auto_eval_semantic.txt
+!backend/evaluation/results/auto_eval_semantic_items.csv
 
 # Frontend
 frontend/node_modules/
@@ -20,7 +24,7 @@ frontend/dist/
 .DS_Store
 Thumbs.db
 *.pyc
-
+.venv/
 .github/
 !.github/
 !.github/workflows/

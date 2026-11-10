@@ -1,0 +1,43 @@
+Retrieval mode: semantic
+Automatic evidence-key matching (diagnostic; not human relevance judgments)
+ALL answerable           n=63  Hit@1=0.46 Hit@3=0.73 Hit@5=0.81 MRR=0.60 KeyRecall@3=0.65 Evidence-P@3=0.29
+
+doc=rnn_ch14             n=31  Hit@1=0.45 Hit@3=0.68 Hit@5=0.74 MRR=0.57 KeyRecall@3=0.57 Evidence-P@3=0.27
+doc=sale_of_goods_act_1930 n=32  Hit@1=0.47 Hit@3=0.78 Hit@5=0.88 MRR=0.63 KeyRecall@3=0.73 Evidence-P@3=0.30
+
+Unanswerable questions: 9
+Diagnostic threshold sweep (not a held-out threshold selection):
+threshold  answered(answerable)  refused(unanswerable)  balanced
+    0.05                  1.00                   0.00      0.50
+    0.10                  1.00                   0.00      0.50
+    0.15                  1.00                   0.00      0.50
+    0.20                  1.00                   0.00      0.50
+    0.25                  1.00                   0.00      0.50
+    0.30                  0.97                   0.11      0.54
+    0.35                  0.95                   0.11      0.53
+    0.40                  0.90                   0.22      0.56
+    0.45                  0.87                   0.22      0.55
+    0.50                  0.78                   0.56      0.67
+    0.55                  0.63                   0.89      0.76
+    0.60                  0.40                   1.00      0.70
+
+Configured threshold: 0.05
+
+Misses (automatic evidence Hit@3 = 0):
+  q001 (factual) top1=0.6142
+  q002 (factual) top1=0.3493
+  q004 (factual) top1=0.5542
+  q005 (factual) top1=0.2776
+  q006 (factual) top1=0.5847
+  q009 (factual) top1=0.6006
+  q010 (factual) top1=0.5162
+  q013 (factual_trap) top1=0.4771
+  q026 (summarise) top1=0.5874
+  q028 (summarise) top1=0.6052
+  q034 (factual) top1=0.4617
+  q041 (factual) top1=0.5564
+  q044 (factual) top1=0.5341
+  q047 (explain) top1=0.6710
+  q049 (explain) top1=0.6359
+  q059 (summarise) top1=0.5931
+  q062 (quiz) top1=0.5329

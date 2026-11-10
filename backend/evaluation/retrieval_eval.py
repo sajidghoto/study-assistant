@@ -8,7 +8,6 @@ from pathlib import Path
 from statistics import mean
 from typing import Callable
 
-
 HERE = Path(__file__).parent
 DEFAULT_DATASET = HERE / "rag_eval_dataset.jsonl"
 DEFAULT_HUMAN_IDS = HERE / "human_eval_ids.json"
