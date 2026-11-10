@@ -21,7 +21,9 @@ export default function ChatWindow({ sessionId, documents, onQuizIntent }) {
 
   const { messages, querying, handleQuery, clearMessages } = useChat(
     sessionId,
-    selectedDocId,
+    documents.some((document) => document.document_id === selectedDocId)
+      ? selectedDocId
+      : null,
     onQuizIntent,
   );
 
@@ -29,17 +31,6 @@ export default function ChatWindow({ sessionId, documents, onQuizIntent }) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  // Reset document filter when documents change
-  // (e.g., if the selected document was deleted)
-  useEffect(() => {
-    if (selectedDocId) {
-      const stillExists = documents.some(
-        (d) => d.document_id === selectedDocId,
-      );
-      if (!stillExists) setSelectedDocId(null);
-    }
-  }, [documents, selectedDocId]);
 
   const handleSubmit = () => {
     if (!inputText.trim() || querying) return;
@@ -79,7 +70,11 @@ export default function ChatWindow({ sessionId, documents, onQuizIntent }) {
           {/* Document filter */}
           <DocumentFilter
             documents={documents}
-            selectedId={selectedDocId}
+            selectedId={
+              documents.some((document) => document.document_id === selectedDocId)
+                ? selectedDocId
+                : null
+            }
             onSelect={setSelectedDocId}
             disabled={querying}
           />

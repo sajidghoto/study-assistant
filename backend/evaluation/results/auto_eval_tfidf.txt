@@ -1,0 +1,34 @@
+Retrieval mode: tfidf
+Automatic evidence-key matching (diagnostic; not human relevance judgments)
+ALL answerable           n=63  Hit@1=0.63 Hit@3=0.87 Hit@5=0.92 MRR=0.75 KeyRecall@3=0.82 Evidence-P@3=0.37
+
+doc=rnn_ch14             n=31  Hit@1=0.55 Hit@3=0.84 Hit@5=0.90 MRR=0.70 KeyRecall@3=0.76 Evidence-P@3=0.33
+doc=sale_of_goods_act_1930 n=32  Hit@1=0.72 Hit@3=0.91 Hit@5=0.94 MRR=0.80 KeyRecall@3=0.88 Evidence-P@3=0.41
+
+Unanswerable questions: 9
+Diagnostic threshold sweep (not a held-out threshold selection):
+threshold  answered(answerable)  refused(unanswerable)  balanced
+    0.05                  1.00                   0.00      0.50
+    0.10                  0.75                   0.44      0.60
+    0.15                  0.40                   0.56      0.48
+    0.20                  0.14                   1.00      0.57
+    0.25                  0.02                   1.00      0.51
+    0.30                  0.00                   1.00      0.50
+    0.35                  0.00                   1.00      0.50
+    0.40                  0.00                   1.00      0.50
+    0.45                  0.00                   1.00      0.50
+    0.50                  0.00                   1.00      0.50
+    0.55                  0.00                   1.00      0.50
+    0.60                  0.00                   1.00      0.50
+
+Configured threshold: 0.05
+
+Misses (automatic evidence Hit@3 = 0):
+  q015 (explain) top1=0.2364
+  q016 (explain) top1=0.2155
+  q025 (compare) top1=0.0577
+  q026 (summarise) top1=0.0572
+  q028 (summarise) top1=0.1085
+  q034 (factual) top1=0.0700
+  q041 (factual) top1=0.0611
+  q061 (quiz) top1=0.1113

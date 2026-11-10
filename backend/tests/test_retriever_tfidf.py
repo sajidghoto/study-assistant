@@ -32,6 +32,20 @@ class TestBuildIndex:
         loaded = _load_pickle(_chunks_path(sid))
         assert len(loaded) == len(sample_chunks)
 
+    def test_single_chunk_index_is_queryable(
+        self, tmp_session_dir, sample_session, sample_chunks
+    ):
+        sid = sample_session["session_id"]
+        build_index(session_id=sid, chunks=sample_chunks[:1])
+
+        results = query_index(
+            session_id=sid,
+            query_text="backpropagation neural networks",
+        )
+
+        assert results
+        assert results[0]["chunk_id"] == sample_chunks[0]["chunk_id"]
+
     def test_second_upload_merges_chunks(
         self, tmp_session_dir, sample_session, sample_chunks, sample_chunks_2
     ):
@@ -162,3 +176,19 @@ class TestRebuildIndex:
         assert not (session_dir / "tfidf_matrix.pkl").exists()
         assert not (session_dir / "vectorizer.pkl").exists()
         assert not (session_dir / "chunks.pkl").exists()
+
+    def test_rebuild_with_single_chunk_is_queryable(
+        self, tmp_session_dir, sample_session, sample_chunks, sample_chunks_2
+    ):
+        sid = sample_session["session_id"]
+        build_index(session_id=sid, chunks=sample_chunks)
+        build_index(session_id=sid, chunks=sample_chunks_2)
+
+        rebuild_index(session_id=sid, remaining_chunks=sample_chunks[:1])
+
+        results = query_index(
+            session_id=sid,
+            query_text="backpropagation neural networks",
+        )
+        assert results
+        assert results[0]["chunk_id"] == sample_chunks[0]["chunk_id"]

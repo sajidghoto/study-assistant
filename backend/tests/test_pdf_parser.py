@@ -114,7 +114,10 @@ class TestChunkText:
 
     def test_short_text_produces_single_chunk(self):
         from modules.pdf_parser import chunk_text
-        short_text = "This is a short text with twenty words total here now yes"
+        short_text = (
+            "This is a short text with twenty words total here now yes for "
+            "this simple chunk test case today indeed"
+        )
         chunks = chunk_text(
             text=short_text,
             session_id="sess_x",

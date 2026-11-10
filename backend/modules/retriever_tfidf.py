@@ -94,7 +94,7 @@ def build_index(session_id: str, chunks: list[dict]) -> None:
     vectorizer = TfidfVectorizer(
         ngram_range=(1, 2),
         min_df=1,
-        max_df=0.95,
+        max_df=0.95 if len(texts) > 1 else 1.0,
         sublinear_tf=True,
     )
 
@@ -133,7 +133,7 @@ def rebuild_index(session_id: str, remaining_chunks: list[dict]) -> None:
     vectorizer = TfidfVectorizer(
         ngram_range=(1, 2),
         min_df=1,
-        max_df=0.95,
+        max_df=0.95 if len(texts) > 1 else 1.0,
         sublinear_tf=True,
     )
     tfidf_matrix = vectorizer.fit_transform(texts)
