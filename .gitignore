@@ -15,6 +15,10 @@ backend/evaluation/results/*
 !backend/evaluation/results/auto_eval_tfidf_items.csv
 !backend/evaluation/results/auto_eval_semantic.txt
 !backend/evaluation/results/auto_eval_semantic_items.csv
+!backend/evaluation/results/auto_eval_chunk150_comparison.txt
+!backend/evaluation/results/auto_eval_chunk150_summary.csv
+!backend/evaluation/results/auto_eval_chunk150_tfidf_items.csv
+!backend/evaluation/results/auto_eval_chunk150_semantic_items.csv
 
 # Frontend
 frontend/node_modules/

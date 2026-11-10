@@ -1,0 +1,14 @@
+Controlled retrieval chunk-size experiment
+Same original PDF-extracted word streams; source PDFs were not present in the workspace. Reconstructed from persisted 300/50 chunks, verified exact 300/50 round-trip (76 chunks).
+Evaluation: same 72 questions (63 answerable, 9 unanswerable), top-5 retrieval, original phrase-matching scorer. Metrics below average over answerable questions.
+Model/tokenization: all-MiniLM-L6-v2, max_seq_length=256; special tokens included; token counts measured without truncation.
+
+| Retriever | Chunk size | Hit@1 | Hit@3 | Hit@5 | MRR | Chunks | >256 tokens |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| TFIDF | 300/50 words | 0.635 | 0.873 | 0.921 | 0.751 | 76 | 74/76 (97.4%) |
+| TFIDF | 150/30 words | 0.476 | 0.841 | 0.905 | 0.652 | 156 | 32/156 (20.5%) |
+| SEMANTIC | 300/50 words | 0.460 | 0.730 | 0.810 | 0.599 | 76 | 74/76 (97.4%) |
+| SEMANTIC | 150/30 words | 0.460 | 0.762 | 0.857 | 0.620 | 156 | 32/156 (20.5%) |
+
+Hit@3 semantic-minus-TF-IDF gap: -0.143 at 300 words; -0.079 at 150 words. The gap partially closed, not eliminated.
+At 150/30, token count median/max: 201.0/541; 32 chunks remain over the limit.
